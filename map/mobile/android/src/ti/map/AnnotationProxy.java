@@ -21,6 +21,8 @@ import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiDrawableReference;
 
+import java.util.HashMap;
+
 import android.graphics.Bitmap;
 import android.os.Message;
 import android.view.View;
@@ -44,7 +46,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 	TiC.PROPERTY_LEFT_BUTTON,
 	TiC.PROPERTY_LEFT_VIEW,
 	TiC.PROPERTY_RIGHT_BUTTON,
-	TiC.PROPERTY_RIGHT_VIEW
+	TiC.PROPERTY_RIGHT_VIEW,
+	TiC.PROPERTY_ANCHOR_POINT
 })
 public class AnnotationProxy extends KrollProxy
 {
@@ -64,6 +67,10 @@ public class AnnotationProxy extends KrollProxy
 	private static final int MSG_SET_LAT = MSG_FIRST_ID + 301;
 	private static final int MSG_SET_DRAGGABLE = MSG_FIRST_ID + 302;
 	private static final int MSG_UPDATE_INFO_WINDOW = MSG_FIRST_ID + 303;
+	private static final int MSG_SET_ANCHOR_POINT= MSG_FIRST_ID + 304;
+	
+	public float anchorU = 0.5f;
+	public float anchorV = 0.5f;
 
 	public AnnotationProxy()
 	{
@@ -114,6 +121,29 @@ public class AnnotationProxy extends KrollProxy
 
 			case MSG_UPDATE_INFO_WINDOW: {
 				updateInfoWindow();
+				return true;
+			}
+			
+			case MSG_SET_ANCHOR_POINT: {
+				result = (AsyncResult) msg.obj;
+
+				Object anchorPoint = result.getArg();
+
+				if (anchorPoint instanceof HashMap) {
+					HashMap point = (HashMap) anchorPoint;
+					anchorU = TiConvert.toFloat(point, "u");
+					anchorV = TiConvert.toFloat(point, "v");
+
+					Log.d("TiAPI", "anchor u : " + anchorU + " anchor v : " + anchorV);
+
+					markerOptions.anchor(anchorU, anchorV);
+
+				} else {
+					Log.e(TAG, "Invalid argument type for anchorPoint property. Ignoring");
+				}
+
+				result.setResult(null);
+
 				return true;
 			}
 
@@ -169,6 +199,24 @@ public class AnnotationProxy extends KrollProxy
 				infoWindow.setSubtitle(TiConvert.toString(getProperty(TiC.PROPERTY_SUBTITLE)));
 			} else{
 				infoWindow.setSubtitle(null);
+			}
+		}
+		
+		if (hasProperty(TiC.PROPERTY_ANCHOR_POINT)){
+			
+			Object anchorPoint = getProperty(TiC.PROPERTY_ANCHOR_POINT);
+			
+			if (anchorPoint instanceof HashMap) {
+				HashMap point = (HashMap) anchorPoint;
+				anchorU = TiConvert.toFloat(point, "u");
+				anchorV = TiConvert.toFloat(point, "v");
+				
+				Log.d("TiAPI", "anchor u : " + anchorU + " anchor v : " + anchorV);
+				
+				markerOptions.anchor(anchorU, anchorV);
+				
+			} else {
+				Log.e(TAG, "Invalid argument type for anchorPoint property. Ignoring");
 			}
 		}
 
@@ -329,7 +377,10 @@ public class AnnotationProxy extends KrollProxy
 			TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SET_DRAGGABLE),
 				TiConvert.toBoolean(value));
 		}
-
+		
+		if (hasProperty(TiC.PROPERTY_ANCHOR_POINT)){
+			TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SET_ANCHOR_POINT), value);
+		}
 	}
 
 	private TiMapInfoWindow getOrCreateMapInfoWindow()

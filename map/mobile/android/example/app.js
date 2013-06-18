@@ -97,7 +97,7 @@ win.open();
 /************************************************************************************/
 function annotationTest() {
 var win = Ti.UI.createWindow({fullscreen: false});
-var anno = MapModule.createAnnotation({latitude: -33.87365, image: 'map_pin.png', longitude: 151.20689, title: "Sydney", subtitle: "Sydney is quite chill", draggable: true});
+var anno = MapModule.createAnnotation({latitude: -33.87365, anchorPoint: {u: 0.5, v: 1.0}, image: 'map_pin.png', longitude: 151.20689, title: "Sydney", subtitle: "Sydney is quite chill", draggable: true});
 var anno2 = MapModule.createAnnotation({latitude: -33.86365, pincolor: MapModule.ANNOTATION_BLUE, longitude: 151.21689, title: "Anno2", subtitle: "This is anno2", draggable: true});
 var anno3 = MapModule.createAnnotation({latitude: -33.85365, longitude: 151.20689, title: "Anno3", subtitle: "This is anno3", draggable: false});
 var anno4 = MapModule.createAnnotation({latitude: -33.86365, longitude: 151.22689, title: "Anno4", subtitle: "This is anno4", draggable: true});
